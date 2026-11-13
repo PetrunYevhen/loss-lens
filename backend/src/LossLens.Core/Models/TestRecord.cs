@@ -1,3 +1,5 @@
+using LossLens.Core.Common;
+
 namespace LossLens.Core.Models;
 
 public class TestRecord
@@ -11,16 +13,18 @@ public class TestRecord
 
     public TestRecord(DateOnly date, int hour, Guid stationId, int testedUnits, int firstPassUnits)
     {
-        if (testedUnits < 0)
-            throw new ArgumentOutOfRangeException(nameof(testedUnits), "Tested units cannot be negative.");
-        if (firstPassUnits < 0 || firstPassUnits > testedUnits)
-            throw new ArgumentOutOfRangeException(nameof(firstPassUnits), "First pass units must be between 0 and tested units.");
+        ArgumentOutOfRangeException.ThrowIfNegative(testedUnits);
+        ArgumentOutOfRangeException.ThrowIfNegative(firstPassUnits);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(firstPassUnits, testedUnits);
 
         Id = Guid.NewGuid();
         Date = date;
-        Hour = hour;
-        StationId = stationId;
+        Hour = Guard.HourOfDay(hour);
+        StationId = Guard.NotEmpty(stationId);
         TestedUnits = testedUnits;
         FirstPassUnits = firstPassUnits;
     }
+
+    /// <summary>Units that did not pass on the first attempt.</summary>
+    public int FailedUnits => TestedUnits - FirstPassUnits;
 }

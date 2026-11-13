@@ -7,6 +7,8 @@ public class ProductionLine
 
     public ProductionLine(string name)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
         Id = Guid.NewGuid();
         Name = name;
     }

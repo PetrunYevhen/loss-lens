@@ -1,3 +1,5 @@
+using LossLens.Core.Common;
+
 namespace LossLens.Core.Models;
 
 public class HourlyRecord
@@ -12,16 +14,14 @@ public class HourlyRecord
 
     public HourlyRecord(DateOnly date, int hour, Guid lineId, Guid shiftId, int plannedUnits, int goodUnits)
     {
-        if (plannedUnits < 0)
-            throw new ArgumentOutOfRangeException(nameof(plannedUnits), "Planned units cannot be negative.");
-        if (goodUnits < 0)
-            throw new ArgumentOutOfRangeException(nameof(goodUnits), "Good units cannot be negative.");
+        ArgumentOutOfRangeException.ThrowIfNegative(plannedUnits);
+        ArgumentOutOfRangeException.ThrowIfNegative(goodUnits);
 
         Id = Guid.NewGuid();
         Date = date;
-        Hour = hour;
-        LineId = lineId;
-        ShiftId = shiftId;
+        Hour = Guard.HourOfDay(hour);
+        LineId = Guard.NotEmpty(lineId);
+        ShiftId = Guard.NotEmpty(shiftId);
         PlannedUnits = plannedUnits;
         GoodUnits = goodUnits;
     }

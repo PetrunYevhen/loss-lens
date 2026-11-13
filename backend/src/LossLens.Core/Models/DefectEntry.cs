@@ -1,3 +1,5 @@
+using LossLens.Core.Common;
+
 namespace LossLens.Core.Models;
 
 public class DefectEntry
@@ -11,14 +13,14 @@ public class DefectEntry
 
     public DefectEntry(DateOnly date, int hour, Guid stationId, string defectCode, int count)
     {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count), "Defect count cannot be negative.");
+        ArgumentException.ThrowIfNullOrWhiteSpace(defectCode);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
         Id = Guid.NewGuid();
         Date = date;
-        Hour = hour;
-        StationId = stationId;
-        DefectCode = defectCode;
+        Hour = Guard.HourOfDay(hour);
+        StationId = Guard.NotEmpty(stationId);
+        DefectCode = defectCode.Trim().ToUpperInvariant();
         Count = count;
     }
 }

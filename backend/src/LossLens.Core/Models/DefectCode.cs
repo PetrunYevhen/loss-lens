@@ -8,7 +8,11 @@ public class DefectCode
 
     public DefectCode(string code, string name, string category)
     {
-        Code = code;
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentException.ThrowIfNullOrWhiteSpace(category);
+
+        Code = code.Trim().ToUpperInvariant();
         Name = name;
         Category = category;
     }

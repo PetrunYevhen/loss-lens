@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LossLens.Core\LossLens.Core.csproj" />
     <ProjectReference Include="..\LossLens.Infrastructure\LossLens.Infrastructure.csproj" />
+    <ProjectReference Include="..\LossLens.Application\LossLens.Application.csproj" />
   </ItemGroup>
 
 </Project>

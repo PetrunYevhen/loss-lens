@@ -1,0 +1,24 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:host(.badge--green) {
+  color: var(--good);
+}
+
+:host(.badge--amber) {
+  color: var(--warn);
+}
+
+:host(.badge--red) {
+  color: var(--bad);
+}
+
+:host(.badge--unknown) {
+  color: var(--muted);
+}

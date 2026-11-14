@@ -1,0 +1,78 @@
+<header>
+  <h1 class="title">{{ t.title }}</h1>
+  <p class="subtitle">{{ t.description }}</p>
+</header>
+
+<div class="warning" role="note">
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 16 16"
+    aria-hidden="true"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+  >
+    <path d="M8 3v6M8 12.2v.1" />
+  </svg>
+  <span
+    ><strong>{{ t.warningTitle }}</strong> {{ t.warningText }}</span
+  >
+</div>
+
+<div class="roles" role="group" [attr.aria-label]="t.title">
+  @for (option of options; track option.role) {
+    <button
+      type="button"
+      class="role"
+      [class.role--selected]="role() === option.role"
+      [attr.aria-pressed]="role() === option.role"
+      (click)="selectRole(option.role)"
+    >
+      <span class="role__head">
+        <strong>{{ option.title }}</strong>
+        @if (role() === option.role) {
+          <span class="role__selected">{{ t.selected }}</span>
+        }
+      </span>
+      <span class="role__text">{{ option.text }}</span>
+      <span class="role__scope">{{ t.access }}: {{ option.scope }}</span>
+    </button>
+  }
+</div>
+
+<section class="card">
+  <div class="card__head">
+    <h2 class="card__title">{{ t.linesTitle }}</h2>
+    <p class="card__subtitle">{{ linesHint() }}</p>
+  </div>
+
+  <app-view-state [status]="linesState()" (retry)="lines.reload()">
+    <ng-template>
+      <div class="lines">
+        @for (line of lines.value() ?? []; track line.id) {
+          <label class="line" [class.line--disabled]="!needsLines()">
+            <input
+              type="checkbox"
+              [checked]="lineIds().includes(line.id)"
+              [disabled]="!needsLines()"
+              (change)="toggleLine(line.id)"
+            />
+            {{ line.name }}
+          </label>
+        }
+      </div>
+    </ng-template>
+  </app-view-state>
+
+  @if (needsLines() && !canSubmit()) {
+    <p class="hint" role="status">{{ t.needLine }}</p>
+  }
+
+  <div class="actions">
+    <button type="button" class="btn btn--primary" [disabled]="!canSubmit()" (click)="submit()">
+      {{ t.submit }}
+    </button>
+  </div>
+</section>

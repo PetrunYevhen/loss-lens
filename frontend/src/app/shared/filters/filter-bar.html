@@ -1,0 +1,59 @@
+<header class="bar">
+  <div class="bar__heading">
+    <h1 class="bar__title">{{ title() }}</h1>
+    <p class="bar__scope">{{ scope() }}</p>
+  </div>
+
+  <div class="bar__controls">
+    <label class="field">
+      {{ t.filters.date }}
+      <input
+        #date
+        type="date"
+        [value]="filters.date()"
+        (change)="date.value && filters.update({ date: date.value })"
+      />
+    </label>
+
+    <label class="field">
+      {{ t.filters.line }}
+      <select #line (change)="filters.update({ lineId: line.value })">
+        <option value="all" [selected]="filters.lineId() === 'all'">
+          {{ t.filters.allLines }}
+        </option>
+        @for (item of lines(); track item.id) {
+          <option [value]="item.id" [selected]="filters.lineId() === item.id">
+            {{ item.name }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      {{ t.filters.shift }}
+      <select #shift (change)="filters.update({ shiftId: shift.value })">
+        <option value="all" [selected]="filters.shiftId() === 'all'">
+          {{ t.filters.allShifts }}
+        </option>
+        @for (id of shiftIds; track id) {
+          <option [value]="id" [selected]="filters.shiftId() === id">{{ t.shifts[id] }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="check">
+      <input
+        #auto
+        type="checkbox"
+        [checked]="filters.autoRefresh()"
+        (change)="filters.update({ autoRefresh: auto.checked })"
+      />
+      {{ t.filters.autoRefresh }}
+    </label>
+
+    <a class="role-pill" routerLink="/roles">
+      <span class="role-pill__dot" aria-hidden="true"></span>
+      {{ t.filters.role }}: {{ roleLabel() }}
+    </a>
+  </div>
+</header>

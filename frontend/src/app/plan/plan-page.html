@@ -1,0 +1,68 @@
+<app-filter-bar [title]="t.title" [description]="t.description" />
+
+<ng-template #hours let-rows let-caption="caption">
+  <div class="table-wrap">
+    <table class="table">
+      <caption class="sr-only">
+        {{
+          caption
+        }}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">{{ t.hour }}</th>
+          <th scope="col" class="num">{{ t.planned }}</th>
+          <th scope="col" class="num">{{ t.actual }}</th>
+          <th scope="col" class="num">{{ t.cumulative }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track row.hour) {
+          <tr>
+            <td>{{ row.label }}</td>
+            <td class="num">{{ int(row.planned) }}</td>
+            <td class="num">{{ row.good === null ? '—' : int(row.good) }}</td>
+            <td class="num">{{ row.cumulative === null ? '—' : int(row.cumulative) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</ng-template>
+
+<section class="card">
+  <div class="card__head">
+    <h2 class="card__title">{{ t.chart }}</h2>
+    <p class="card__subtitle">{{ t.chartHint }}</p>
+  </div>
+  <app-view-state [status]="state()" (retry)="plan.reload()">
+    <ng-template>
+      <app-plan-chart [points]="plan.value() ?? []" [height]="340" />
+    </ng-template>
+  </app-view-state>
+</section>
+
+@if (state() === 'ready') {
+  <div class="row">
+    <section class="card card--half">
+      <div class="card__head">
+        <h2 class="card__title">{{ t.firstHalf }}</h2>
+      </div>
+      <ng-container
+        [ngTemplateOutlet]="hours"
+        [ngTemplateOutletContext]="{ $implicit: firstHalf(), caption: t.firstHalf }"
+      />
+    </section>
+
+    <section class="card card--half">
+      <div class="card__head">
+        <h2 class="card__title">{{ t.secondHalf }}</h2>
+        <p class="card__subtitle">{{ t.secondHalfHint }}</p>
+      </div>
+      <ng-container
+        [ngTemplateOutlet]="hours"
+        [ngTemplateOutletContext]="{ $implicit: secondHalf(), caption: t.secondHalf }"
+      />
+    </section>
+  </div>
+}

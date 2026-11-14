@@ -1,0 +1,90 @@
+<app-filter-bar [title]="t.dashboard.title" />
+
+<app-view-state [status]="summaryState()" (retry)="summary.reload()">
+  <ng-template>
+    @if (summary.value(); as s) {
+      <div class="kpi-grid">
+        <app-kpi-card
+          [label]="t.kpi.planAttainment"
+          [value]="s.planAttainment.value"
+          unit="%"
+          [caption]="t.kpi.target + ' ' + s.planAttainment.target + '%'"
+          [status]="s.planAttainment.status"
+          [delta]="s.planAttainment.deltaVsPrevDay"
+          [deltaUnit]="t.kpi.pp"
+          link="/plan"
+        />
+        <app-kpi-card
+          [label]="t.kpi.lineRty"
+          [value]="s.lineRty.value"
+          unit="%"
+          [caption]="
+            t.kpi.target +
+            ' ' +
+            s.lineRty.target +
+            '%' +
+            (s.lineRty.incomplete ? ' · ' + t.kpi.incomplete : '')
+          "
+          [status]="s.lineRty.status"
+          [delta]="s.lineRty.deltaVsPrevDay"
+          [deltaUnit]="t.kpi.pp"
+          link="/fpy"
+        />
+        <app-kpi-card
+          [label]="t.kpi.dpmo"
+          [value]="s.dpmo.value"
+          [digits]="0"
+          [caption]="t.kpi.dpmoCaption"
+          link="/defects"
+        />
+        <app-kpi-card
+          [label]="t.kpi.topDefect"
+          [text]="s.topDefect?.code ?? '—'"
+          [caption]="
+            s.topDefect ? s.topDefect.name + ' · ' + s.topDefect.count + ' ' + t.kpi.pieces : ''
+          "
+          link="/defects"
+        />
+      </div>
+    }
+  </ng-template>
+</app-view-state>
+
+<div class="row">
+  <section class="card card--wide">
+    <div class="card__head">
+      <h2 class="card__title">{{ t.dashboard.planChart }}</h2>
+    </div>
+    <app-view-state [status]="planState()" (retry)="plan.reload()">
+      <ng-template>
+        <app-plan-chart [points]="plan.value() ?? []" />
+      </ng-template>
+    </app-view-state>
+  </section>
+
+  <section class="card card--side">
+    <div class="card__head">
+      <h2 class="card__title">{{ t.dashboard.stations }}</h2>
+      <p class="card__subtitle">{{ t.dashboard.stationsHint }}</p>
+    </div>
+    <app-view-state [status]="stationsState()" (retry)="stations.reload()">
+      <ng-template>
+        <app-fpy-station-chart
+          [stations]="stations.value() ?? []"
+          [thresholds]="thresholds()?.stationFpy ?? null"
+        />
+      </ng-template>
+    </app-view-state>
+  </section>
+</div>
+
+<section class="card">
+  <div class="card__head">
+    <h2 class="card__title">{{ t.dashboard.pareto }}</h2>
+  </div>
+  <app-view-state [status]="paretoState()" (retry)="pareto.reload()">
+    <ng-template>
+      <app-pareto-chart [items]="pareto.value()?.items ?? []" />
+    </ng-template>
+  </app-view-state>
+</section>

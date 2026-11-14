@@ -1,0 +1,85 @@
+<app-filter-bar [title]="t.title" [description]="t.description" />
+
+<section class="card">
+  <div class="card__top">
+    <div class="card__head">
+      <h2 class="card__title">{{ t.trend }}</h2>
+      <p class="card__subtitle">{{ t.trendHint }}, {{ days() }} {{ t.days }}</p>
+    </div>
+    <div class="segmented" role="group" [attr.aria-label]="t.trendHint">
+      @for (period of periods; track period) {
+        <button
+          type="button"
+          class="chip"
+          [attr.aria-pressed]="days() === period"
+          (click)="days.set(period)"
+        >
+          {{ period }} {{ t.days }}
+        </button>
+      }
+    </div>
+  </div>
+  <app-view-state [status]="trendState()" (retry)="trend.reload()">
+    <ng-template>
+      <app-fpy-trend-chart [points]="trend.value() ?? []" [target]="lineTarget()" />
+    </ng-template>
+  </app-view-state>
+</section>
+
+<div class="row">
+  <section class="card card--stations">
+    <div class="card__head">
+      <h2 class="card__title">{{ t.stations }}</h2>
+      <p class="card__subtitle">{{ t.stationsHint }}</p>
+    </div>
+    <app-view-state [status]="stationsState()" (retry)="stations.reload()">
+      <ng-template>
+        <app-fpy-station-chart
+          [stations]="stations.value() ?? []"
+          [thresholds]="thresholds()?.stationFpy ?? null"
+        />
+      </ng-template>
+    </app-view-state>
+  </section>
+
+  <section class="card card--data">
+    <div class="card__head">
+      <h2 class="card__title">{{ t.stationData }}</h2>
+    </div>
+    <app-view-state [status]="stationsState()" (retry)="stations.reload()">
+      <ng-template>
+        <div class="table-wrap">
+          <table class="table">
+            <caption class="sr-only">
+              {{
+                t.stationData
+              }}
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ t.station }}</th>
+                <th scope="col" class="num">{{ t.tested }}</th>
+                <th scope="col" class="num">{{ t.firstPass }}</th>
+                <th scope="col" class="num">{{ t.fpy }}</th>
+                <th scope="col">{{ t.status }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of stations.value() ?? []; track row.stationId) {
+                <tr>
+                  <td>
+                    <strong>{{ row.name }}</strong>
+                  </td>
+                  <td class="num">{{ int(row.tested) }}</td>
+                  <td class="num">{{ int(row.firstPass) }}</td>
+                  <td class="num">{{ percent(row.fpy) }}</td>
+                  <td><app-status-badge [status]="row.status" /></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </ng-template>
+    </app-view-state>
+  </section>
+</div>

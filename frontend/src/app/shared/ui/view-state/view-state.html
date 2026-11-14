@@ -1,0 +1,34 @@
+@switch (status()) {
+  @case ('loading') {
+    <div class="state" role="status" aria-busy="true">
+      <span class="sr-only">{{ t.loading }}</span>
+      <div class="skeleton skeleton--short"></div>
+      <div class="skeleton skeleton--tall"></div>
+      <div class="skeleton skeleton--medium"></div>
+    </div>
+  }
+  @case ('empty') {
+    <div class="state state--message">
+      <strong>{{ t.emptyTitle }}</strong>
+      <p>{{ t.emptyText }}</p>
+    </div>
+  }
+  @case ('forbidden') {
+    <div class="state state--message">
+      <strong>{{ t.forbiddenTitle }}</strong>
+      <p>{{ t.forbiddenText }}</p>
+    </div>
+  }
+  @case ('error') {
+    <div class="state state--message" role="alert">
+      <strong class="state__error">{{ t.errorTitle }}</strong>
+      <p>{{ t.errorText }}</p>
+      <button type="button" class="btn" (click)="retry.emit()">{{ t.retry }}</button>
+    </div>
+  }
+  @default {
+    @if (content(); as template) {
+      <ng-container [ngTemplateOutlet]="template" />
+    }
+  }
+}

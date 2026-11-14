@@ -1,0 +1,36 @@
+@if (hint()) {
+  <p class="hint">{{ hint() }}</p>
+}
+
+<div class="rows">
+  <div class="row row--head" aria-hidden="true">
+    <span>{{ t.station }}</span>
+    <span class="axis"><span>90</span><span>100</span></span>
+    <span class="num">{{ t.fpy }}</span>
+    <span>{{ t.status }}</span>
+  </div>
+
+  @for (row of rows(); track row.stationId) {
+    <a
+      class="row row--link"
+      routerLink="/defects"
+      [queryParams]="{ station: row.stationId }"
+      queryParamsHandling="merge"
+    >
+      <span class="name">{{ row.name }}</span>
+
+      <span class="track" role="img" [attr.aria-label]="row.name + ': ' + format(row.fpy)">
+        @for (mark of marks(); track mark.value) {
+          <span class="mark" [style.left.%]="mark.left"></span>
+        }
+        @if (row.left !== null) {
+          <span [class]="'fill fill--' + row.status" [style.width.%]="row.left"></span>
+          <span [class]="'dot dot--' + row.status" [style.left.%]="row.left"></span>
+        }
+      </span>
+
+      <span class="num value">{{ format(row.fpy) }}</span>
+      <app-status-badge [status]="row.status" />
+    </a>
+  }
+</div>

@@ -1,0 +1,57 @@
+<ng-template #body>
+  <div class="kpi__head">
+    <span class="kpi__label">{{ label() }}</span>
+    @if (status(); as s) {
+      <app-status-badge [status]="s" />
+    }
+  </div>
+
+  <div class="kpi__value">
+    <span class="kpi__number">{{ display() }}</span>
+    @if (showUnit()) {
+      <span class="kpi__unit">{{ unit() }}</span>
+    }
+  </div>
+
+  @if (caption()) {
+    <div class="kpi__caption">{{ caption() }}</div>
+  }
+
+  @if (deltaText(); as text) {
+    <div
+      class="delta"
+      [class.delta--good]="deltaTone() === 'good'"
+      [class.delta--bad]="deltaTone() === 'bad'"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        @if (deltaUp()) {
+          <path d="M3 10l4-4 4 4" />
+        } @else {
+          <path d="M3 6l4 4 4-4" />
+        }
+      </svg>
+      <span class="delta__text">{{ text }}</span>
+      <span class="delta__caption">{{ vsPrevDay }}</span>
+    </div>
+  }
+</ng-template>
+
+@if (link(); as href) {
+  <a class="kpi kpi--link" [routerLink]="href" queryParamsHandling="preserve">
+    <ng-container [ngTemplateOutlet]="body" />
+  </a>
+} @else {
+  <div class="kpi">
+    <ng-container [ngTemplateOutlet]="body" />
+  </div>
+}

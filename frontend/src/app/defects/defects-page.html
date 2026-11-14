@@ -1,0 +1,66 @@
+<app-filter-bar [title]="t.title" [description]="t.description" />
+
+<div class="toolbar">
+  <div class="segmented" role="group" [attr.aria-label]="t.stationFilter">
+    <button
+      type="button"
+      class="chip"
+      [attr.aria-pressed]="activeStation() === 'all'"
+      (click)="filters.update({ stationId: 'all' })"
+    >
+      {{ t.allStations }}
+    </button>
+    @for (type of stationTypes; track type) {
+      <button
+        type="button"
+        class="chip"
+        [attr.aria-pressed]="activeStation() === type"
+        (click)="filters.update({ stationId: type })"
+      >
+        {{ type }}
+      </button>
+    }
+  </div>
+
+  <div class="segmented" role="group" [attr.aria-label]="t.period">
+    @for (item of periods; track item.days) {
+      <button
+        type="button"
+        class="chip"
+        [attr.aria-pressed]="period() === item.days"
+        (click)="period.set(item.days)"
+      >
+        {{ item.label }}
+      </button>
+    }
+  </div>
+</div>
+
+<app-view-state [status]="state()" (retry)="pareto.reload()">
+  <ng-template>
+    <div class="kpi-grid">
+      <app-kpi-card
+        [label]="kpi.dpmo"
+        [value]="pareto.value()?.dpmo ?? null"
+        [digits]="0"
+        [caption]="kpi.dpmoCaption"
+      />
+      <app-kpi-card [label]="t.total" [value]="total()" [digits]="0" [unit]="kpi.pieces" />
+    </div>
+
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">{{ t.pareto }}</h2>
+        <p class="card__subtitle">{{ t.paretoHint }}</p>
+      </div>
+      <app-pareto-chart [items]="pareto.value()?.items ?? []" [height]="320" />
+    </section>
+
+    <section class="card">
+      <div class="card__head">
+        <h2 class="card__title">{{ t.table }}</h2>
+      </div>
+      <app-defect-table [items]="pareto.value()?.items ?? []" />
+    </section>
+  </ng-template>
+</app-view-state>

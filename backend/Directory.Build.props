@@ -4,13 +4,17 @@
     Settings and package references shared by the solution. Packages are attached to layers by
     project name, with versions written here. Do not add packages with `dotnet add package`:
     it would put them into the .csproj. Add them in this file instead.
-    LossLens.Core and LossLens.Application have no packages on purpose.
+    LossLens.Core has no packages on purpose. LossLens.Application only gets the DI abstractions.
   -->
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Application'))">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.11" />
+  </ItemGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />

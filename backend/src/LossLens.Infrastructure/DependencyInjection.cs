@@ -1,4 +1,6 @@
+using LossLens.Core.Abstractions;
 using LossLens.Infrastructure.Persistence;
+using LossLens.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +17,7 @@ public static class DependencyInjection
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
         services.AddDbContext<LossLensDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<IMetricsRepository, MetricsRepository>();
 
         return services;
     }

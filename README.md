@@ -2,7 +2,7 @@
 
 Web app for **daily production metrics** at an electronics factory (EMS). It shows how the shift/day is going and where exactly output is being lost.
 
-> Status: draft, MVP on mock data. Full requirements: [REQUIREMENTS.md](REQUIREMENTS.md).
+> Status: MVP on generated demo data. Full requirements: [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## What it is and why
 
@@ -105,7 +105,36 @@ Base path `/api/v1`: `/lines`, `/kpi/summary`, `/plan-vs-actual`, `/fpy/trend`, 
 
 ## Running
 
-To be added in milestone M0 (scaffold). Plan: `dotnet run` in `backend/src/LossLens.Api`, `ng serve` in `frontend`.
+The backend needs PostgreSQL, a signing key for the tokens and, to sign in, a demo password. Secrets live in `.env`, which git ignores. Copy `backend/.env.example` (local run) or `.env.example` (Docker) to `.env` and set the values:
+
+| Variable | Meaning |
+|---|---|
+| `ConnectionStrings__Default` | PostgreSQL connection string (local run) |
+| `Jwt__Key` / `JWT_KEY` | secret that signs access tokens, 32+ characters (`openssl rand -base64 48`) |
+| `Auth__DemoPassword` / `DEMO_PASSWORD` | password of the demo users, 8+ characters |
+
+On the first start the backend applies the migrations, fills the database with deterministic demo data (30 days, 3 lines, 3 shifts, up to the current hour) and creates the demo users `manager`, `supervisor` (all lines), `operator1` and `operator2` (one line each). Data for the hours that passed since the last start is added on every start. Set `Data__SeedMockData=false` to switch the demo data off.
+
+**With Docker** (database, backend and frontend):
+
+```bash
+cp .env.example .env   # then set POSTGRES_PASSWORD, JWT_KEY, DEMO_PASSWORD
+docker compose up --build
+```
+
+The app is on http://localhost:4200, the API on http://localhost:5141.
+
+**Without Docker:**
+
+```bash
+# backend: needs a running PostgreSQL and backend/.env
+cd backend/src/LossLens.Api && dotnet run
+
+# frontend: proxies /api to http://localhost:5141
+cd frontend && npm ci && npm start
+```
+
+Sign in at http://localhost:4200 with a demo user and the demo password. Tests: `dotnet test` in `backend`, `npm test` in `frontend`.
 
 ## Milestones
 

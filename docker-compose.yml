@@ -26,6 +26,8 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ASPNETCORE_HTTP_PORTS: "8080"
       ConnectionStrings__Default: Host=db;Port=5432;Database=${POSTGRES_DB:-losslens};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
+      Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env (32+ characters)}
+      Auth__DemoPassword: ${DEMO_PASSWORD:-}
     depends_on:
       db:
         condition: service_healthy

@@ -12,6 +12,7 @@ public class LossLensDbContext(DbContextOptions<LossLensDbContext> options) : Db
     public DbSet<TestRecord> TestRecords => Set<TestRecord>();
     public DbSet<DefectCode> DefectCodes => Set<DefectCode>();
     public DbSet<DefectEntry> DefectEntries => Set<DefectEntry>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LossLensDbContext).Assembly);

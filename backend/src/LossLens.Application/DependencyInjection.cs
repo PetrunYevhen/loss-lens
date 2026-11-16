@@ -27,13 +27,12 @@ public static class DependencyInjection
         services.AddSingleton(sp => new PlantClock(sp.GetRequiredService<TimeProvider>(), timeZone));
         services.AddSingleton<ScopeResolver>();
 
-        services.AddScoped<LinesService>();
-        services.AddScoped<ConfigService>();
-        services.AddScoped<KpiService>();
-        services.AddScoped<PlanService>();
-        services.AddScoped<FpyService>();
-        services.AddScoped<DefectsService>();
-
+        services.Scan(scan => scan
+            .FromAssemblyOf<LinesService>()
+            .AddClasses(c => c.InNamespaces("LossLens.Application.Services"))
+            .AsSelf()
+            .WithScopedLifetime());
+        
         return services;
     }
 }

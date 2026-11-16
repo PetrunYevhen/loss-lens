@@ -14,16 +14,28 @@
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Application'))">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.11" />
+    <PackageReference Include="Scrutor" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Infrastructure'))">
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
+    <!-- Npgsql 9.0.4 asks only for Relational 9.0.1. Pin it so every project uses the same version as EF Core. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.11" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
   </ItemGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Api'))">
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
+    <!-- Only the browser UI. The OpenApi package above writes the document it shows. -->
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
@@ -36,6 +48,12 @@
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!-- Endpoint tests start the real API against a PostgreSQL container, so they need Docker. -->
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.Api.Tests'))">
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.11" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.17.0" />
   </ItemGroup>
 
 </Project>

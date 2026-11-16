@@ -64,7 +64,7 @@ Assumptions are marked so they can be confirmed with the people who gave the tas
 | Line Supervisor | FPY by station, defect Pareto, trend | Assigned lines (one or more) |
 | Manager | Daily summary of all lines, comparison, trends | All lines |
 
-**MVP authentication (demo only).** The user picks a role (and a line for Operator/Supervisor) in a role selector. The frontend sends `X-Demo-Role` and `X-Demo-LineIds` headers, the backend enforces the scope. This is **not secure** and must be replaced by JWT with roles later (see 11). Out-of-scope data returns `403`.
+**Authentication.** The user signs in with a user name and password (`POST /api/v1/auth/login`) and receives a JWT access token (60 minutes) with the user id, name and role. The frontend sends it as `Authorization: Bearer`. The backend loads the role and the allowed lines of that user from the database on every request, so a new line or a changed assignment works at once with the token the user already has, and a removed user loses access immediately. Passwords are stored as PBKDF2 hashes. Every endpoint except login and `/health` needs a valid token (`401` otherwise). Out-of-scope data returns `403`. The signing key and the demo password come from the environment (`Jwt__Key`, `Auth__DemoPassword`), never from the repository. Sign-in attempts are limited per client address (10 per minute by default, `RateLimiting:Login`), more give `429` with `Retry-After`. Refresh tokens are not part of the MVP.
 
 ---
 
@@ -154,11 +154,13 @@ Base path `/api/v1`. Dates `yyyy-MM-dd`, timestamps ISO 8601. Errors use RFC 780
 
 | Endpoint | Query params | Returns |
 |---|---|---|
+| `POST /auth/login` | body `{username, password}` | `{accessToken, expiresAt, role, lineIds}`, `401` for wrong credentials, `429` after too many attempts |
 | `GET /lines` | none | lines the role may see, with stations |
+| `GET /shifts` | none | shifts `{id, name, start, end}`, their ids are the `shiftId` filter |
 | `GET /kpi/summary` | `date`, `lineId?`, `shiftId?` | KPI values, targets, RAG, delta vs previous day |
-| `GET /plan-vs-actual` | `date`, `lineId`, `shiftId?` | array of `{hour, planned, good}` |
+| `GET /plan-vs-actual` | `date`, `lineId?`, `shiftId?` | array of `{hour, planned, good}` |
 | `GET /fpy/trend` | `from`, `to`, `lineId?` | array of `{date, rty}` |
-| `GET /fpy/stations` | `date`, `lineId`, `shiftId?` | array of `{stationId, name, tested, firstPass, fpy, status}` |
+| `GET /fpy/stations` | `date`, `lineId?`, `shiftId?` | array of `{stationId, name, tested, firstPass, fpy, status}`. One line in scope: its stations (`stationId` is a Guid). Several lines: stations combined by type (`stationId` is `SPI`, `AOI`, `ICT` or `FCT`) |
 | `GET /defects/pareto` | `from`, `to`, `lineId?`, `stationId?`, `shiftId?` | `{items:[{code,name,count,share,cumulativeShare}], dpmo}` |
 | `GET /config/thresholds` | none | current thresholds |
 
@@ -173,7 +175,9 @@ Example `GET /kpi/summary`:
 }
 ```
 
-Validation: `from <= to`, range max 90 days, unknown `lineId` -> `404`, out-of-scope -> `403`, malformed params -> `400` with field details.
+All endpoints except login need `Authorization: Bearer <token>`. Ids are Guids. Without `lineId`, a manager gets all lines and other roles get their own lines.
+
+Validation: `from <= to`, range max 92 days, unknown `lineId`, `shiftId` or `stationId` -> `404` (a user outside the scope gets `403` first, so the answer does not reveal which lines exist), out-of-scope -> `403`, malformed params -> `400` with field details.
 
 ---
 
@@ -218,7 +222,7 @@ Business rule: `firstPassUnits <= testedUnits`, `goodUnits >= 0`, defects are li
 - Each endpoint responds within 300 ms on mock data, dashboard loads within 2 s.
 
 **Security (MVP)**
-- Demo auth only (see 3). No secrets in the repo. Validate all inputs.
+- JWT sign-in (see 3). No secrets in the repo. Validate all inputs.
 
 ---
 

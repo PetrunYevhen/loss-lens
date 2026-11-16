@@ -5,22 +5,26 @@
     <button
       type="button"
       class="chip"
-      [attr.aria-pressed]="activeStation() === 'all'"
+      [attr.aria-pressed]="filters.stationId() === 'all'"
       (click)="filters.update({ stationId: 'all' })"
     >
       {{ t.allStations }}
     </button>
-    @for (type of stationTypes; track type) {
+    @for (station of stationOptions(); track station.id) {
       <button
         type="button"
         class="chip"
-        [attr.aria-pressed]="activeStation() === type"
-        (click)="filters.update({ stationId: type })"
+        [attr.aria-pressed]="filters.stationId() === station.id"
+        (click)="filters.update({ stationId: station.id })"
       >
-        {{ type }}
+        {{ station.name }}
       </button>
     }
   </div>
+
+  @if (!scopedLine()) {
+    <p class="toolbar__hint">{{ t.pickLine }}</p>
+  }
 
   <div class="segmented" role="group" [attr.aria-label]="t.period">
     @for (item of periods; track item.days) {

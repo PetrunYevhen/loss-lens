@@ -72,7 +72,7 @@
   background: var(--line);
 }
 
-.demo-note {
+.account {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -84,7 +84,12 @@
   color: var(--ink-2);
 }
 
-.demo-note strong {
+.account .btn {
+  margin-top: 8px;
+  min-height: 36px;
+}
+
+.account strong {
   color: var(--ink);
 }
 
@@ -96,6 +101,23 @@
   flex-direction: column;
   gap: 24px;
   padding: 28px 32px 40px;
+}
+
+/* The menu stays in view while the page scrolls, so the account block and sign-out are always reachable. */
+@media (min-width: 861px) {
+  .nav {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+/* Without the menu (the sign-in page) the content sits in the middle. */
+.shell:not(:has(.nav)) .main {
+  margin-inline: auto;
+  width: 100%;
 }
 
 @media (max-width: 860px) {
@@ -118,9 +140,25 @@
     flex-wrap: wrap;
   }
 
-  .nav__divider,
-  .demo-note {
+  .nav__divider {
     display: none;
+  }
+
+  /* A compact row at the top, so signing out stays reachable on a phone. */
+  .account {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .account span:first-child {
+    display: none;
+  }
+
+  .account .btn {
+    margin-top: 0;
   }
 
   .main {

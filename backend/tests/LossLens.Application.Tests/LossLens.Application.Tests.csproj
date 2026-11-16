@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\LossLens.Application\LossLens.Application.csproj" />
+  </ItemGroup>
+
+</Project>

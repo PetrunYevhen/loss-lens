@@ -12,8 +12,9 @@
 
   @for (row of rows(); track row.stationId) {
     <a
-      class="row row--link"
-      routerLink="/defects"
+      class="row"
+      [class.row--link]="row.linkable"
+      [routerLink]="row.linkable ? '/defects' : null"
       [queryParams]="{ station: row.stationId }"
       queryParamsHandling="merge"
     >

@@ -19,6 +19,12 @@
       <p>{{ t.forbiddenText }}</p>
     </div>
   }
+  @case ('invalid') {
+    <div class="state state--message" role="alert">
+      <strong>{{ t.invalidTitle }}</strong>
+      <p>{{ t.invalidText }}</p>
+    </div>
+  }
   @case ('error') {
     <div class="state state--message" role="alert">
       <strong class="state__error">{{ t.errorTitle }}</strong>

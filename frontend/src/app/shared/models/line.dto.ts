@@ -1,5 +1,4 @@
 export type StationType = 'SPI' | 'AOI' | 'ICT' | 'FCT';
-export type ShiftId = 'A' | 'B' | 'C';
 
 export interface StationDto {
   id: string;

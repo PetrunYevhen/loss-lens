@@ -35,8 +35,10 @@
         <option value="all" [selected]="filters.shiftId() === 'all'">
           {{ t.filters.allShifts }}
         </option>
-        @for (id of shiftIds; track id) {
-          <option [value]="id" [selected]="filters.shiftId() === id">{{ t.shifts[id] }}</option>
+        @for (shift of shifts(); track shift.id) {
+          <option [value]="shift.id" [selected]="filters.shiftId() === shift.id">
+            {{ shift.name }} · {{ shift.start }}–{{ shift.end }}
+          </option>
         }
       </select>
     </label>
@@ -51,9 +53,9 @@
       {{ t.filters.autoRefresh }}
     </label>
 
-    <a class="role-pill" routerLink="/roles">
+    <span class="role-pill">
       <span class="role-pill__dot" aria-hidden="true"></span>
       {{ t.filters.role }}: {{ roleLabel() }}
-    </a>
+    </span>
   </div>
 </header>

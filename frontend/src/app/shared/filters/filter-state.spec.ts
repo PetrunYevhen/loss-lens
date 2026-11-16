@@ -58,11 +58,35 @@ describe('FilterState', () => {
     expect(filters.autoRefresh()).toBe(true);
   });
 
-  it('ignores malformed values', async () => {
-    await router.navigateByUrl('/plan?date=13-11-2026&shift=Z');
+  it('ignores a malformed date', async () => {
+    await router.navigateByUrl('/plan?date=13-11-2026');
 
     expect(filters.date()).toBe(todayInKyiv());
-    expect(filters.shiftId()).toBe('all');
+  });
+
+  it('takes the shift id from the URL as it is', async () => {
+    const id = '7d0f5a52-9a3a-4e0f-8d54-0c6a3d6f1c11';
+    await router.navigateByUrl(`/plan?shift=${id}`);
+
+    expect(filters.shiftId()).toBe(id);
+    expect(filters.shiftParam()).toBe(id);
+  });
+
+  it('clears the station when the line changes, because a station belongs to one line', async () => {
+    await router.navigateByUrl('/defects?line=L1&station=S1');
+
+    await filters.update({ lineId: 'L2' });
+
+    expect(router.url).toBe('/defects?line=L2');
+    expect(filters.stationId()).toBe('all');
+  });
+
+  it('keeps a station that is set together with the line', async () => {
+    await router.navigateByUrl('/defects');
+
+    await filters.update({ lineId: 'L2', stationId: 'S9' });
+
+    expect(router.url).toBe('/defects?line=L2&station=S9');
   });
 
   it('keeps a non-default date in the URL and drops today', async () => {

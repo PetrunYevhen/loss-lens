@@ -6,6 +6,9 @@ import { StationFpyDto } from '../shared/models/fpy.dto';
 import { ThresholdDto } from '../shared/models/thresholds.dto';
 import { StatusBadge } from '../shared/ui/status-badge/status-badge';
 
+/** A single station has a Guid id. Stations combined by type (several lines) have a type name instead. */
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const SCALE_MIN = 90;
 const SCALE_MAX = 100;
 
@@ -16,8 +19,8 @@ function position(value: number): number {
 }
 
 /**
- * FPY per station on a 90-100% scale with threshold marks. Each row links to the defects view
- * for that station. Status is shown with icon and text as well as color.
+ * FPY per station on a 90-100% scale with threshold marks. Each row of a single line links to the
+ * defects view for that station. Status is shown with icon and text as well as color.
  */
 @Component({
   selector: 'app-fpy-station-chart',
@@ -48,6 +51,7 @@ export class FpyStationChart {
   protected readonly rows = computed(() =>
     this.stations().map((station) => ({
       ...station,
+      linkable: GUID.test(station.stationId),
       left: station.fpy === null ? null : position(station.fpy),
     })),
   );

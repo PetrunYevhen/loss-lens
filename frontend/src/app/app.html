@@ -1,4 +1,5 @@
 <div class="shell">
+  @if (auth.isAuthenticated()) {
   <nav class="nav" [attr.aria-label]="t.nav.label">
     <div class="brand">
       <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
@@ -43,37 +44,16 @@
           </a>
         </li>
       }
-      <li class="nav__divider" role="separator"></li>
-      <li>
-        <a
-          class="nav__link"
-          [routerLink]="roleItem.path"
-          routerLinkActive="nav__link--active"
-          ariaCurrentWhenActive="page"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <path [attr.d]="roleItem.icon" />
-          </svg>
-          {{ roleItem.label }}
-        </a>
-      </li>
     </ul>
 
-    <div class="demo-note">
-      <strong>{{ t.demoNote.title }}</strong>
-      <span>{{ t.demoNote.text }}</span>
+    <div class="account">
+      <span>{{ t.login.signedInAs }}</span>
+      <strong>{{ auth.username() }}</strong>
+      <span>{{ roleLabel() }}</span>
+      <button type="button" class="btn" (click)="logout()">{{ t.login.logout }}</button>
     </div>
   </nav>
+  }
 
   <main class="main">
     <router-outlet />

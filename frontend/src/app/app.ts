@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthState } from './shared/auth/auth-state';
 import { UK } from './shared/i18n/uk';
 
 interface NavItem {
@@ -18,6 +19,8 @@ interface NavItem {
 })
 export class App {
   protected readonly t = UK;
+  protected readonly auth = inject(AuthState);
+  private readonly router = inject(Router);
 
   protected readonly items: readonly NavItem[] = [
     {
@@ -35,9 +38,13 @@ export class App {
     },
   ];
 
-  protected readonly roleItem: NavItem = {
-    label: UK.nav.roles,
-    path: '/roles',
-    icon: 'M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21c1-4 4-6 8-6s7 2 8 6',
-  };
+  protected readonly roleLabel = computed(() => {
+    const role = this.auth.role();
+    return role ? UK.roles[role] : '';
+  });
+
+  protected logout(): void {
+    this.auth.clear();
+    void this.router.navigateByUrl('/login');
+  }
 }

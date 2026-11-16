@@ -3,7 +3,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Params, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { isIsoDate, todayInKyiv } from '../dates';
-import { ShiftId } from '../models/line.dto';
 
 const ALL = 'all';
 const AUTO_REFRESH_MS = 60_000;
@@ -34,10 +33,7 @@ export class FilterState {
     return isIsoDate(value) ? value : todayInKyiv();
   });
   readonly lineId = computed(() => this.text('line') ?? ALL);
-  readonly shiftId = computed<ShiftId | typeof ALL>(() => {
-    const value = this.params()['shift'];
-    return value === 'A' || value === 'B' || value === 'C' ? value : ALL;
-  });
+  readonly shiftId = computed(() => this.text('shift') ?? ALL);
   readonly stationId = computed(() => this.text('station') ?? ALL);
   readonly autoRefresh = computed(() => this.params()['auto'] === '1');
 
@@ -71,6 +67,10 @@ export class FilterState {
     }
     if (patch.lineId !== undefined) {
       queryParams['line'] = patch.lineId === ALL ? null : patch.lineId;
+      // A station belongs to one line, so a station from the previous line must not stay selected.
+      if (patch.stationId === undefined) {
+        queryParams['station'] = null;
+      }
     }
     if (patch.shiftId !== undefined) {
       queryParams['shift'] = patch.shiftId === ALL ? null : patch.shiftId;

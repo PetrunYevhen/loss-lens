@@ -26,3 +26,8 @@ app-view-state {
 section.card + section.card {
   margin-top: 24px;
 }
+
+.toolbar__hint {
+  font-size: 13px;
+  color: var(--muted);
+}

@@ -3,7 +3,7 @@ import { computed, inject, Injectable } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import { LineDto } from '../models/line.dto';
-import { RoleState } from '../role/role-state';
+import { AuthState } from '../auth/auth-state';
 import { API_BASE } from './api-config';
 
 @Injectable({ providedIn: 'root' })
@@ -15,20 +15,17 @@ export class LinesApi {
     return this.http.get<LineDto[]>(`${API_BASE}/lines`);
   }
 
-  /** Demo only: the role picker needs every line whatever the current role is. */
-  getAllLines(): Observable<LineDto[]> {
-    return this.http.get<LineDto[]>(`${API_BASE}/lines`, { headers: { 'X-Demo-Role': 'manager' } });
-  }
 }
 
-/** Lines visible to the current role, reloaded when the role changes. */
+/** Lines visible to the signed-in user, reloaded when another user signs in. */
 @Injectable({ providedIn: 'root' })
 export class LinesState {
   private readonly api = inject(LinesApi);
-  private readonly role = inject(RoleState);
+  private readonly auth = inject(AuthState);
 
   readonly resource = rxResource({
-    params: () => ({ role: this.role.role(), lineIds: this.role.lineIds().join(',') }),
+    // No user, no request: the resource stays idle until someone signs in.
+    params: () => this.auth.username() ?? undefined,
     stream: () => this.api.getLines(),
   });
 

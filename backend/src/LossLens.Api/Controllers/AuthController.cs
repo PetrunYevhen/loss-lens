@@ -1,7 +1,9 @@
+using LossLens.Api.Configuration;
 using LossLens.Application.Dtos;
 using LossLens.Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LossLens.Api.Controllers;
 
@@ -9,8 +11,9 @@ namespace LossLens.Api.Controllers;
 [Route("api/v1/auth")]
 public sealed class AuthController(AuthService auth) : ControllerBase
 {
-    /// <summary>Signs in and returns an access token. Wrong credentials give 401.</summary>
+    /// <summary>Signs in and returns an access token. Wrong credentials give 401, too many attempts give 429.</summary>
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitRegistration.LoginPolicy)]
     [HttpPost("login")]
     public Task<LoginResultDto> Login(LoginRequest request, CancellationToken ct) =>
         auth.LoginAsync(request.Username, request.Password, ct);

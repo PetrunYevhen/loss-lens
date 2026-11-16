@@ -12,12 +12,12 @@ public sealed class DefectsController(DefectsService defects, IUserContextProvid
 {
     /// <summary>Pareto of defect causes and DPMO for a date range.</summary>
     [HttpGet("pareto")]
-    public Task<ParetoResponseDto> GetPareto(
+    public async Task<ParetoResponseDto> GetPareto(
         [BindRequired] DateOnly from,
         [BindRequired] DateOnly to,
         Guid? lineId,
         Guid? stationId,
         Guid? shiftId,
         CancellationToken ct) =>
-        defects.GetParetoAsync(users.GetCurrent(), from, to, lineId, stationId, shiftId, ct);
+        await defects.GetParetoAsync(await users.GetCurrentAsync(ct), from, to, lineId, stationId, shiftId, ct);
 }

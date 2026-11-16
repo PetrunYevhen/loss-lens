@@ -2,6 +2,7 @@ using LossLens.Application.Calculations;
 using LossLens.Application.Dtos;
 using LossLens.Application.Security;
 using LossLens.Application.Time;
+using LossLens.Application.Validation;
 using LossLens.Core.Abstractions;
 using LossLens.Core.Config;
 using LossLens.Core.Metrics;
@@ -24,6 +25,7 @@ public class KpiService(
         UserContext user, DateOnly date, Guid? lineId, Guid? shiftId, CancellationToken ct = default)
     {
         var lineIds = scopeResolver.Resolve(user, lineId);
+        await metricsRepository.EnsureExistAsync(lineId, shiftId, null, ct);
 
         // Last clock hour that counts. Same rule as the plan chart: the current hour is included.
         var now = plantClock.Now;

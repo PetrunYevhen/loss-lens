@@ -1,6 +1,7 @@
 using LossLens.Application.Dtos;
 using LossLens.Application.Security;
 using LossLens.Application.Time;
+using LossLens.Application.Validation;
 using LossLens.Core.Abstractions;
 
 namespace LossLens.Application.Services;
@@ -22,6 +23,7 @@ public class PlanService
         DateOnly date, Guid? lineId, Guid? shiftId, CancellationToken ct = default)
     {
         var lineIds = _scopeResolver.Resolve(userContext, lineId);
+        await _metricsRepository.EnsureExistAsync(lineId, shiftId, null, ct);
         var records = await _metricsRepository
             .GetHourlyRecordsAsync(date, date, lineIds, shiftId, ct);
 

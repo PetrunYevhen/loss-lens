@@ -41,7 +41,7 @@ public class JwtTokenIssuerTests
         });
 
     [Fact]
-    public async Task Token_CarriesSubjectNameRoleAndEveryLine()
+    public async Task Token_CarriesSubjectNameAndRole_ButNoLines()
     {
         var lineA = Guid.NewGuid();
         var lineB = Guid.NewGuid();
@@ -55,20 +55,20 @@ public class JwtTokenIssuerTests
         Assert.Equal(user.Id.ToString(), jwt.Subject);
         Assert.Equal("supervisor", jwt.GetClaim("name").Value);
         Assert.Equal("supervisor", jwt.GetClaim("role").Value);
-        Assert.Equivalent(
-            new[] { lineA.ToString(), lineB.ToString() },
-            jwt.Claims.Where(c => c.Type == JwtTokenIssuer.LineIdClaim).Select(c => c.Value).ToArray());
+
+        // The lines are read from the database on every request, so a changed assignment needs no new token.
+        Assert.DoesNotContain(jwt.Claims, c => c.Type == "line_id");
+        Assert.DoesNotContain(jwt.Claims, c => c.Value == lineA.ToString() || c.Value == lineB.ToString());
     }
 
     [Fact]
-    public void Manager_HasNoLineClaims()
+    public void Manager_TokenHasTheManagerRole()
     {
         var token = Issuer().Issue(new User("boss", "hash", UserRole.Manager, []));
 
         var jwt = new JsonWebToken(token.Value);
 
         Assert.Equal("manager", jwt.GetClaim("role").Value);
-        Assert.DoesNotContain(jwt.Claims, c => c.Type == JwtTokenIssuer.LineIdClaim);
     }
 
     [Fact]

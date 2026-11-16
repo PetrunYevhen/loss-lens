@@ -36,6 +36,25 @@ public class User
         if (!Enum.IsDefined(role))
             throw new ArgumentOutOfRangeException(nameof(role), role, "Unknown role.");
 
+        var lines = ValidateLines(role, lineIds);
+
+        Id = Guid.NewGuid();
+        Username = Normalize(username);
+        PasswordHash = passwordHash;
+        Role = role;
+        _lineIds = lines;
+    }
+
+    /// <summary>
+    /// Replaces the lines of the user, for example when a new line is added. The same rules apply as when the
+    /// user is created. A manager always has no lines.
+    /// </summary>
+    public void AssignLines(IEnumerable<Guid> lineIds) => _lineIds = ValidateLines(Role, lineIds);
+
+    private static Guid[] ValidateLines(UserRole role, IEnumerable<Guid> lineIds)
+    {
+        ArgumentNullException.ThrowIfNull(lineIds);
+
         var lines = lineIds.Distinct().ToArray();
         if (lines.Contains(Guid.Empty))
             throw new ArgumentException("Line id cannot be an empty GUID.", nameof(lineIds));
@@ -48,11 +67,7 @@ public class User
                 throw new ArgumentException("A supervisor needs at least one line.", nameof(lineIds));
         }
 
-        Id = Guid.NewGuid();
-        Username = Normalize(username);
-        PasswordHash = passwordHash;
-        Role = role;
-        _lineIds = role == UserRole.Manager ? [] : lines;
+        return role == UserRole.Manager ? [] : lines;
     }
 
     /// <summary>The form in which user names are stored and looked up.</summary>

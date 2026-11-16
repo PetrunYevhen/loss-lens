@@ -26,6 +26,9 @@ public class FpyService(
     {
         RequestValidation.EnsureDateRange(from, to);
 
+        var lineIds = scopeResolver.Resolve(user, lineId);
+        await metricsRepository.EnsureExistAsync(lineId, null, null, ct);
+
         // The future has no data. A range that lies entirely ahead of today is empty.
         var today = plantClock.Today;
         if (to > today)
@@ -38,7 +41,6 @@ public class FpyService(
             return [];
         }
 
-        var lineIds = scopeResolver.Resolve(user, lineId);
         var stations = await metricsRepository.GetStationsInScopeAsync(lineIds, ct);
         var tests = await metricsRepository.GetTestRecordsAsync(from, to, lineIds, null, ct);
         var testsByDate = tests.ToLookup(t => t.Date);
@@ -60,6 +62,8 @@ public class FpyService(
         UserContext user, DateOnly date, Guid? lineId, Guid? shiftId, CancellationToken ct = default)
     {
         var lineIds = scopeResolver.Resolve(user, lineId);
+        await metricsRepository.EnsureExistAsync(lineId, shiftId, null, ct);
+
         var stations = await metricsRepository.GetStationsInScopeAsync(lineIds, ct);
         var tests = await metricsRepository.GetTestRecordsAsync(date, date, lineIds, shiftId, ct);
         var threshold = thresholds.Value.StationFpy;

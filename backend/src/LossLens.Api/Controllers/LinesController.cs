@@ -11,6 +11,6 @@ public sealed class LinesController(LinesService lines, IUserContextProvider use
 {
     /// <summary>Lines the caller may see, with their stations in line order.</summary>
     [HttpGet]
-    public Task<IReadOnlyList<LineDto>> Get(CancellationToken ct) =>
-        lines.GetLinesAsync(users.GetCurrent(), ct);
+    public async Task<IReadOnlyList<LineDto>> Get(CancellationToken ct) =>
+        await lines.GetLinesAsync(await users.GetCurrentAsync(ct), ct);
 }

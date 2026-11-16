@@ -32,15 +32,17 @@ public class Startup
         services.AddControllers().AddJsonOptions(options =>
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)));
 
-        services.AddOpenApi();
+        services.AddOpenApiWithBearer();
         services.AddProblemDetails();
         // services.AddExceptionHandler<ApplicationExceptionHandler>();
 
         services.AddHttpContextAccessor();
-        services.AddScoped<IUserContextProvider, JwtUserContextProvider>();
+        services.AddScoped<IUserContextProvider, CurrentUserContextProvider>();
         services.AddJwtAuthentication(_configuration);
 
         services.AddMetricOptions(_configuration);
+        services.AddProxyHeaders();
+        services.AddLoginRateLimit(_configuration);
 
         services.AddApplication(_configuration["Plant:TimeZone"]);
         services.AddInfrastructure(
@@ -67,17 +69,36 @@ public class Startup
             SeedDemoUsers(app, scope);
         }
 
+        // First, so every later step (rate limit, logs) sees the real client address behind the proxy.
+        app.UseForwardedHeaders();
+
         // Unexpected errors become a 500 problem. The middleware inside answers the expected 400, 401 and 403 first.
         app.UseExceptionHandler();
         app.UseMiddleware<ClientErrorMiddleware>();
 
-        if (app.Environment.IsDevelopment())
+        // The API description and its browser UI (/swagger). On in development, Swagger:Enabled changes it.
+        // The page and the document need no token, but the calls made from the page do.
+        if (app.Configuration.GetValue("Swagger:Enabled", app.Environment.IsDevelopment()))
         {
             app.MapOpenApi().AllowAnonymous();
+            app.UseSwaggerUI(options =>
+            {
+                options.DocumentTitle = "LossLens API";
+                options.SwaggerEndpoint("/openapi/v1.json", "LossLens v1");
+                options.RoutePrefix = "swagger";
+                options.EnablePersistAuthorization();
+            });
         }
 
-        app.UseHttpsRedirection();
+        // Behind a proxy or in a container there is no HTTPS port to redirect to, so it is on only in development
+        // unless Https:Redirect says otherwise.
+        if (app.Configuration.GetValue("Https:Redirect", app.Environment.IsDevelopment()))
+        {
+            app.UseHttpsRedirection();
+        }
+
         app.UseCors(FrontendCorsPolicy);
+        app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
 

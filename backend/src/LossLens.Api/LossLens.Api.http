@@ -1,32 +1,43 @@
 @host = http://localhost:5141
 @date = 2026-11-16
 
-### Lines the caller may see (manager by default)
-GET {{host}}/api/v1/lines
-Accept: application/json
+### Sign in. Put the accessToken of the answer into @token below.
+POST {{host}}/api/v1/auth/login
+Content-Type: application/json
 
-### An operator needs exactly one line id
+{ "username": "manager", "password": "<Auth__DemoPassword from .env>" }
+
+###
+@token = <paste the accessToken here>
+
+### Lines the caller may see (a manager sees all, others only their own)
 GET {{host}}/api/v1/lines
-X-Demo-Role: operator
-X-Demo-LineIds: 00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
 
 ### KPI cards
 GET {{host}}/api/v1/kpi/summary?date={{date}}
+Authorization: Bearer {{token}}
 
 ### Plan vs actual per hour
 GET {{host}}/api/v1/plan-vs-actual?date={{date}}
+Authorization: Bearer {{token}}
 
 ### FPY by station
 GET {{host}}/api/v1/fpy/stations?date={{date}}
+Authorization: Bearer {{token}}
 
 ### FPY trend
 GET {{host}}/api/v1/fpy/trend?from=2026-11-10&to={{date}}
+Authorization: Bearer {{token}}
 
 ### Defect Pareto and DPMO
 GET {{host}}/api/v1/defects/pareto?from=2026-11-10&to={{date}}
+Authorization: Bearer {{token}}
+
+### Shifts
+GET {{host}}/api/v1/shifts
+Authorization: Bearer {{token}}
 
 ### Thresholds
 GET {{host}}/api/v1/config/thresholds
-
-### Health
-GET {{host}}/health
+Authorization: Bearer {{token}}

@@ -147,4 +147,18 @@ public class PlanServiceTests
 
         Assert.Empty(points);
     }
+
+    [Fact]
+    public async Task UnknownLine_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            GetAsync(ServiceAt(TestWorld.Now), UserContext.Manager, TestWorld.Yesterday, lineId: Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task UnknownShift_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            GetAsync(ServiceAt(TestWorld.Now), UserContext.Manager, TestWorld.Yesterday, shiftId: Guid.NewGuid()));
+    }
 }

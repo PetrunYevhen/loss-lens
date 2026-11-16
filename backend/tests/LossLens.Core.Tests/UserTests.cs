@@ -68,4 +68,39 @@ public class UserTests
     {
         Assert.Throws<ArgumentException>(() => new User("op", "hash", UserRole.Operator, [Guid.Empty]));
     }
+
+    [Fact]
+    public void AssignLines_ReplacesTheLines_WithoutDuplicates()
+    {
+        var user = new User("sup", "hash", UserRole.Supervisor, [LineA]);
+
+        user.AssignLines([LineA, LineB, LineB]);
+
+        Assert.Equal([LineA, LineB], user.LineIds);
+    }
+
+    [Fact]
+    public void AssignLines_KeepsTheRulesOfTheRole()
+    {
+        var op = new User("op", "hash", UserRole.Operator, [LineA]);
+        var sup = new User("sup", "hash", UserRole.Supervisor, [LineA]);
+
+        Assert.Throws<ArgumentException>(() => op.AssignLines([LineA, LineB]));
+        Assert.Throws<ArgumentException>(() => sup.AssignLines([]));
+        Assert.Throws<ArgumentException>(() => sup.AssignLines([Guid.Empty]));
+
+        // A rejected change leaves the old lines.
+        Assert.Equal([LineA], op.LineIds);
+        Assert.Equal([LineA], sup.LineIds);
+    }
+
+    [Fact]
+    public void AssignLines_ToAManager_StaysEmpty()
+    {
+        var boss = new User("boss", "hash", UserRole.Manager, []);
+
+        boss.AssignLines([LineA]);
+
+        Assert.Empty(boss.LineIds);
+    }
 }

@@ -30,6 +30,7 @@ public class DefectsService(
         RequestValidation.EnsureDateRange(from, to);
 
         var lineIds = scopeResolver.Resolve(user, lineId);
+        await metricsRepository.EnsureExistAsync(lineId, shiftId, stationId, ct);
         var stations = await metricsRepository.GetStationsInScopeAsync(lineIds, ct);
         if (stationId is { } id)
         {

@@ -200,4 +200,33 @@ public class DefectsServiceTests
         await Assert.ThrowsAsync<ValidationException>(() =>
             Service().GetParetoAsync(UserContext.Manager, TestWorld.Today.AddDays(-92), TestWorld.Today, null, null, null));
     }
+
+    [Fact]
+    public async Task UnknownLine_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => GetAsync(UserContext.Manager, lineId: Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task UnknownStation_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => GetAsync(UserContext.Manager, stationId: Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task UnknownShift_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => GetAsync(UserContext.Manager, shiftId: Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task StationOfAnotherLine_IsNotAnError_ButGivesNothing()
+    {
+        _world.AddDefect(TestWorld.Yesterday, 8, _world.Line2, StationType.Aoi, "TMB", 3);
+
+        var result = await GetAsync(
+            TestWorld.Operator(_world.Line1), stationId: _world.Station(_world.Line2, StationType.Aoi).Id);
+
+        Assert.Empty(result.Items);
+    }
 }

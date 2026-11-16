@@ -9,13 +9,13 @@ using Microsoft.IdentityModel.Tokens;
 namespace LossLens.Infrastructure.Security;
 
 /// <summary>
-/// Issues signed JWT access tokens. Claims: <c>sub</c> (user id), <c>name</c>, <c>role</c> (manager, supervisor
-/// or operator) and one <c>line_id</c> per allowed line.
+/// Issues signed JWT access tokens. Claims: <c>sub</c> (user id), <c>name</c> and <c>role</c> (manager,
+/// supervisor or operator). The lines of the user are not in the token: they are read from the database on
+/// every request, so a new line or a changed assignment works at once, without a new sign-in.
 /// </summary>
 public sealed class JwtTokenIssuer(IOptions<JwtOptions> options, TimeProvider timeProvider) : ITokenIssuer
 {
     public const string RoleClaim = "role";
-    public const string LineIdClaim = "line_id";
 
     public AccessToken Issue(User user)
     {
@@ -31,7 +31,6 @@ public sealed class JwtTokenIssuer(IOptions<JwtOptions> options, TimeProvider ti
             new(JwtRegisteredClaimNames.Name, user.Username),
             new(RoleClaim, user.Role.ToString().ToLowerInvariant())
         };
-        claims.AddRange(user.LineIds.Select(id => new Claim(LineIdClaim, id.ToString())));
 
         var descriptor = new SecurityTokenDescriptor
         {

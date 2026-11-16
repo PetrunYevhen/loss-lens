@@ -223,4 +223,33 @@ public class KpiServiceTests
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             SummaryAsync(TestWorld.Operator(_world.Line1), lineId: _world.Line2.Id));
     }
+
+    [Fact]
+    public async Task UnknownLine_IsNotFound_ForAManager()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => SummaryAsync(lineId: Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task UnknownLine_IsForbidden_ForAnOperator_SoItDoesNotRevealWhatExists()
+    {
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            SummaryAsync(TestWorld.Operator(_world.Line1), lineId: Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task UnknownShift_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            ServiceAt().GetSummaryAsync(UserContext.Manager, TestWorld.Today, null, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task KnownLineAndShift_AreAccepted()
+    {
+        var summary = await ServiceAt().GetSummaryAsync(
+            UserContext.Manager, TestWorld.Today, _world.Line1.Id, _world.DayShift.Id);
+
+        Assert.Null(summary.PlanAttainment.Value);
+    }
 }

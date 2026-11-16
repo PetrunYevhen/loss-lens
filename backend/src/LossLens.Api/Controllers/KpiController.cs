@@ -12,7 +12,7 @@ public sealed class KpiController(KpiService kpi, IUserContextProvider users) : 
 {
     /// <summary>The four KPI cards for one day, with status and change against the previous day.</summary>
     [HttpGet("summary")]
-    public Task<KpiSummaryDto> GetSummary(
+    public async Task<KpiSummaryDto> GetSummary(
         [BindRequired] DateOnly date, Guid? lineId, Guid? shiftId, CancellationToken ct) =>
-        kpi.GetSummaryAsync(users.GetCurrent(), date, lineId, shiftId, ct);
+        await kpi.GetSummaryAsync(await users.GetCurrentAsync(ct), date, lineId, shiftId, ct);
 }

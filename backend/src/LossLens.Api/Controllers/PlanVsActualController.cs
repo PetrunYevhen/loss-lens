@@ -12,7 +12,7 @@ public sealed class PlanVsActualController(PlanService plan, IUserContextProvide
 {
     /// <summary>Planned and good units per hour. Hours that have not started have no actual value.</summary>
     [HttpGet]
-    public Task<IReadOnlyList<PlanVsActualPointDto>> Get(
+    public async Task<IReadOnlyList<PlanVsActualPointDto>> Get(
         [BindRequired] DateOnly date, Guid? lineId, Guid? shiftId, CancellationToken ct) =>
-        plan.GetAsync(users.GetCurrent(), date, lineId, shiftId, ct);
+        await plan.GetAsync(await users.GetCurrentAsync(ct), date, lineId, shiftId, ct);
 }

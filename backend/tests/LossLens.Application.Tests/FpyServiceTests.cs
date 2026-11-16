@@ -226,4 +226,34 @@ public class FpyServiceTests
 
         Assert.Equal(92, points.Count);
     }
+
+    [Fact]
+    public async Task Stations_UnknownLineOrShift_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            ServiceAt().GetStationsAsync(UserContext.Manager, TestWorld.Yesterday, Guid.NewGuid(), null));
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            ServiceAt().GetStationsAsync(UserContext.Manager, TestWorld.Yesterday, null, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task Trend_UnknownLine_IsNotFound()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => ServiceAt().GetTrendAsync(
+            UserContext.Manager, TestWorld.Yesterday, TestWorld.Yesterday, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task Trend_ForeignLine_IsForbidden_EvenForARangeInTheFuture()
+    {
+        await Assert.ThrowsAsync<ForbiddenException>(() => ServiceAt().GetTrendAsync(
+            TestWorld.Operator(_world.Line1), TestWorld.Today.AddDays(5), TestWorld.Today.AddDays(6), _world.Line2.Id));
+    }
+
+    [Fact]
+    public async Task Trend_UnknownLine_IsNotFound_EvenForARangeInTheFuture()
+    {
+        await Assert.ThrowsAsync<NotFoundException>(() => ServiceAt().GetTrendAsync(
+            UserContext.Manager, TestWorld.Today.AddDays(5), TestWorld.Today.AddDays(6), Guid.NewGuid()));
+    }
 }

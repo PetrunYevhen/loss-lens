@@ -12,13 +12,13 @@ public sealed class FpyController(FpyService fpy, IUserContextProvider users) : 
 {
     /// <summary>Daily rolled throughput yield for a date range, up to today.</summary>
     [HttpGet("trend")]
-    public Task<IReadOnlyList<FpyTrendPointDto>> GetTrend(
+    public async Task<IReadOnlyList<FpyTrendPointDto>> GetTrend(
         [BindRequired] DateOnly from, [BindRequired] DateOnly to, Guid? lineId, CancellationToken ct) =>
-        fpy.GetTrendAsync(users.GetCurrent(), from, to, lineId, ct);
+        await fpy.GetTrendAsync(await users.GetCurrentAsync(ct), from, to, lineId, ct);
 
     /// <summary>First pass yield per station for one day (per type when several lines are combined).</summary>
     [HttpGet("stations")]
-    public Task<IReadOnlyList<StationFpyDto>> GetStations(
+    public async Task<IReadOnlyList<StationFpyDto>> GetStations(
         [BindRequired] DateOnly date, Guid? lineId, Guid? shiftId, CancellationToken ct) =>
-        fpy.GetStationsAsync(users.GetCurrent(), date, lineId, shiftId, ct);
+        await fpy.GetStationsAsync(await users.GetCurrentAsync(ct), date, lineId, shiftId, ct);
 }

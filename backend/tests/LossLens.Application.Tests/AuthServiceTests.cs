@@ -108,6 +108,9 @@ public class AuthServiceTests
 
         public Task<User?> FindByUsernameAsync(string normalizedUsername, CancellationToken ct = default) =>
             Task.FromResult(All.FirstOrDefault(u => u.Username == normalizedUsername));
+
+        public Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default) =>
+            Task.FromResult(All.FirstOrDefault(u => u.Id == id));
     }
 
     private sealed class FakeHasher : IPasswordHasher

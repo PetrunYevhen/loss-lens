@@ -55,6 +55,9 @@ export class LoginPage {
     if (status === 401) {
       return this.t.invalid;
     }
+    if (status === 429) {
+      return this.t.tooManyAttempts;
+    }
     return status === 0 ? this.t.unreachable : this.t.failed;
   }
 }

@@ -28,7 +28,7 @@ describe('authInterceptor', () => {
     backend = TestBed.inject(HttpTestingController);
     auth = TestBed.inject(AuthState);
     router = TestBed.inject(Router);
-    await router.navigateByUrl('/fpy?line=L1');
+    await router.navigateByUrl('/fpy?line=11111111-1111-4111-8111-111111111111');
   });
 
   afterEach(() => sessionStorage.clear());
@@ -72,7 +72,7 @@ describe('authInterceptor', () => {
     backend.expectOne('/api/v1/lines').flush({}, { status: 401, statusText: 'Unauthorized' });
 
     expect(auth.isAuthenticated()).toBe(false);
-    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/fpy?line=L1' } });
+    expect(navigate).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/fpy?line=11111111-1111-4111-8111-111111111111' } });
   });
 
   it('leaves a failed sign-in to the form', () => {

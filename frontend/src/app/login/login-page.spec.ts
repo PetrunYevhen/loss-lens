@@ -88,6 +88,18 @@ describe('LoginPage', () => {
     expect(element.textContent).toContain(UK.login.invalid);
   });
 
+  it('asks to wait when there were too many attempts', () => {
+    const { element, submit, refresh } = render();
+
+    submit('operator1', 'secret');
+    backend
+      .expectOne('/api/v1/auth/login')
+      .flush({ status: 429 }, { status: 429, statusText: 'Too Many Requests' });
+    refresh();
+
+    expect(element.textContent).toContain(UK.login.tooManyAttempts);
+  });
+
   it('shows another message when the server cannot be reached', () => {
     const { element, submit, refresh } = render();
 

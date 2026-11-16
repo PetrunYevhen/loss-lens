@@ -1,6 +1,32 @@
-@LossLens.Api_HostAddress = http://localhost:5141
+@host = http://localhost:5141
+@date = 2026-11-16
 
-GET {{LossLens.Api_HostAddress}}/weatherforecast/
+### Lines the caller may see (manager by default)
+GET {{host}}/api/v1/lines
 Accept: application/json
 
-###
+### An operator needs exactly one line id
+GET {{host}}/api/v1/lines
+X-Demo-Role: operator
+X-Demo-LineIds: 00000000-0000-0000-0000-000000000000
+
+### KPI cards
+GET {{host}}/api/v1/kpi/summary?date={{date}}
+
+### Plan vs actual per hour
+GET {{host}}/api/v1/plan-vs-actual?date={{date}}
+
+### FPY by station
+GET {{host}}/api/v1/fpy/stations?date={{date}}
+
+### FPY trend
+GET {{host}}/api/v1/fpy/trend?from=2026-11-10&to={{date}}
+
+### Defect Pareto and DPMO
+GET {{host}}/api/v1/defects/pareto?from=2026-11-10&to={{date}}
+
+### Thresholds
+GET {{host}}/api/v1/config/thresholds
+
+### Health
+GET {{host}}/health

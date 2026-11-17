@@ -2,11 +2,11 @@
 
 Web app for **daily production metrics** at an electronics factory (EMS). It shows how the shift/day is going and where exactly output is being lost.
 
-> Status: MVP on generated demo data. Full requirements: [REQUIREMENTS.md](REQUIREMENTS.md).
+> Status: MVP on generated demo data, PostgreSQL, JWT sign-in. Full requirements: [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## What it is and why
 
-Operators, line supervisors and managers ask the same questions every day:
+Operators, line supervisors and managers ask the same questions every day about the boards (PCB assemblies) the plant builds:
 
 - Are we meeting the plan?
 - How many boards pass the test on the first attempt?
@@ -25,32 +25,27 @@ LossLens calculates the answers in the backend and visualizes them on a dashboar
 
 All formulas live **only in the backend** (`LossLens.Core`). The frontend only displays results.
 
-## EMS and smartwatch: do they relate to the metrics?
+## EMS and the product
 
-**EMS is not a metric.** It is the domain: Electronics Manufacturing Services, i.e. contract manufacturing of electronics (SMT lines, SPI / AOI / ICT / FCT stations). The metrics above are chosen for this kind of production process.
+**EMS is not a metric.** It is the domain: Electronics Manufacturing Services, i.e. contract manufacturing of electronics. The product is a **printed circuit board**. It goes through an SMT line and is checked at four stations: SPI (solder paste), AOI (optical), ICT (in-circuit) and FCT (functional). The metrics above are chosen for this process.
 
-**A smartwatch does not change the metrics themselves.** It depends on what was meant (open question Q1 in the requirements, to be confirmed with the customer):
-
-1. The watch as the **product being assembled**: it is just a product on the line, with the same FPY / defects / plan. Nothing special.
-2. The watch as a **notification device** for a supervisor or manager (1-3 numbers plus a push when a threshold is breached). This is a delivery channel, not a metric, and needs a separate alerts module.
-
-There is no watch support in the MVP. Watch notifications are in the backlog.
+Push notifications to a phone or a smartwatch for supervisors are not in the MVP (open question Q1 in the requirements).
 
 ## Roles
 
 | Role | Sees |
 |---|---|
-| Operator | Current shift, plan vs actual per hour, defects of own line |
-| Line Supervisor | FPY by station, defect Pareto, trend (assigned lines) |
-| Manager | Summary of all lines, comparison, trends |
+| Operator | Own line only: plan vs actual per hour, defects |
+| Line Supervisor | Assigned lines: FPY by station, defect Pareto, trend |
+| Manager | All lines: summary, comparison, trends |
 
-In the MVP the role is picked manually (demo only, **not secure**). JWT comes later.
+Users sign in with a user name and password and get a JWT (60 minutes). The server reads the role and the lines of the user from the database on every request, so a new line or a changed assignment works with the same token. Another line gives `403`, an unknown id `404`, no token `401`, too many sign-in attempts `429`.
 
 ## Stack
 
-- **Backend:** ASP.NET Core / C# (`Api` -> `Core` -> `Infrastructure`)
+- **Backend:** ASP.NET Core 9 / C#, EF Core + PostgreSQL. Layers: `Api` -> `Application` -> `Core`; `Infrastructure` -> `Core`
 - **Frontend:** Angular + TypeScript (standalone components, signals), charts with Apache ECharts
-- **Data:** deterministic mock generator behind `IMetricsRepository`; a real source can be plugged in later without changing the API
+- **Data:** a repository behind `IMetricsRepository`; demo data is generated into the database, a real source can write to the same tables without changing the API
 - **UI language:** Ukrainian by default (strings in a resource file); code, comments, docs and commits are in English
 
 ## Project structure
@@ -59,49 +54,28 @@ In the MVP the role is picked manually (demo only, **not secure**). JWT comes la
 LossLens/
 ├── README.md
 ├── REQUIREMENTS.md
-├── docs/                          # additional documentation
+├── docker-compose.yml             # database, backend, frontend (nginx)
+├── design/                        # UI mockups
 ├── backend/
 │   ├── src/
-│   │   ├── LossLens.Api/          # thin controllers, demo role (X-Demo-Role)
-│   │   │   ├── Controllers/       # Lines, Kpi, PlanVsActual, Fpy, Defects, Config
-│   │   │   └── Auth/              # DemoRoleMiddleware
-│   │   ├── LossLens.Core/         # pure formulas, no I/O
-│   │   │   ├── Metrics/           # PlanAttainment, Fpy, Defect, Rag
-│   │   │   ├── Models/            # Line, Station, Shift, hourly/test/defect records
-│   │   │   ├── Abstractions/      # IMetricsRepository
-│   │   │   └── Config/            # thresholds, opportunitiesPerUnit
-│   │   └── LossLens.Infrastructure/
-│   │       └── Mock/              # MockDataGenerator, MockMetricsRepository
-│   └── tests/
-│       ├── LossLens.Core.Tests/   # xUnit for all formulas, incl. edge cases
-│       └── LossLens.Api.Tests/    # endpoint tests on a real PostgreSQL (Docker): auth, 401/403 by role, validation, data
-└── frontend/                      # Angular app (Angular config files come from ng new)
+│   │   ├── LossLens.Api/          # thin controllers, JWT, errors, rate limit, Swagger
+│   │   ├── LossLens.Application/  # services, DTOs, validation, scope rules (who sees which line)
+│   │   ├── LossLens.Core/         # models, pure metric formulas, abstractions, no I/O
+│   │   └── LossLens.Infrastructure/  # EF Core, migrations, repositories, security, demo data
+│   └── tests/                     # Core, Application, Infrastructure, Api (endpoint tests on a real PostgreSQL)
+└── frontend/
     └── src/app/
-        ├── dashboard/             # page + kpi-card component
+        ├── login/                 # sign-in page
+        ├── dashboard/             # KPI cards
         ├── plan/                  # plan vs actual per hour
         ├── fpy/                   # trend and FPY by station
-        ├── defects/               # Pareto, DPMO, defect table
-        └── shared/
-            ├── api/               # typed API client services
-            ├── models/            # DTO interfaces mirroring the API contract
-            ├── filters/           # filter bar, URL-synced filter state
-            ├── role/              # demo role selector, header interceptor
-            ├── ui/                # status badge (RAG), loading/empty/error view state
-            └── i18n/              # uk strings
+        ├── defects/               # Pareto, DPMO
+        └── shared/                # api clients, auth, filters, charts, ui states, uk strings
 ```
-
-`frontend/src/app` contains only empty placeholder files. Angular's own files (`package.json`, `angular.json`, `app.ts`, ...) are not there yet, because `ng new` refuses to run in a non-empty directory. To generate them without conflicts, scaffold in a temp folder and merge:
-
-```bash
-ng new frontend-tmp --style=scss --routing --skip-git
-rsync -a frontend-tmp/ frontend/ && rm -rf frontend-tmp
-```
-
-The placeholder files do not overlap with Angular's generated files, so nothing is overwritten.
 
 ## API (short)
 
-Base path `/api/v1`: `/lines`, `/kpi/summary`, `/plan-vs-actual`, `/fpy/trend`, `/fpy/stations`, `/defects/pareto`, `/config/thresholds`. Details and examples are in section 6 of [REQUIREMENTS.md](REQUIREMENTS.md).
+Base path `/api/v1`: `/auth/login`, `/lines`, `/shifts`, `/kpi/summary`, `/plan-vs-actual`, `/fpy/trend`, `/fpy/stations`, `/defects/pareto`, `/config/thresholds`; `/health` is outside it. Every endpoint except login and health needs `Authorization: Bearer <token>`. Details are in section 6 of [REQUIREMENTS.md](REQUIREMENTS.md). Swagger UI is on `/swagger` in Development, or with `Swagger__Enabled=true`.
 
 ## Running
 
@@ -116,8 +90,6 @@ The backend needs PostgreSQL, a signing key for the tokens and, to sign in, a de
 On the first start the backend applies the migrations, fills the database with deterministic demo data (30 days, 3 lines, 3 shifts, up to the current hour) and creates the demo users `manager`, `supervisor` (all lines), `operator1` and `operator2` (one line each). Data for the hours that passed since the last start is added on every start. Set `Data__SeedMockData=false` to switch the demo data off.
 
 Optional settings (in `appsettings.json` or as environment variables): `RateLimiting__Login__PermitLimit` and `RateLimiting__Login__WindowSeconds` (sign-in attempts per client address, default 10 per 60 s), `Https__Redirect` (redirect HTTP to HTTPS, on in Development only by default). Behind the nginx container the client address is read from `X-Forwarded-For`, trusted only from private networks.
-
-**Where the data comes from.** The demo data is generated by the backend (`MockDataSeeder`) and the lines, stations and shifts exist only there. The dashboard does not take input from operators. In a real plant the hourly counts come from the test equipment or the MES, and a scheduled worker would collect them every hour and write them to the same tables. The lines of a user are read from the database on every request, so a new line or a changed assignment shows up without a new sign-in. Adding lines, stations and users through the API, and the hourly import itself, are not part of the MVP.
 
 **With Docker** (database, backend and frontend):
 
@@ -142,10 +114,18 @@ Sign in at http://localhost:4200 with a demo user and the demo password. Tests: 
 
 The endpoint tests (`LossLens.Api.Tests/Integration`) start the real API against a throwaway PostgreSQL container, so they need Docker. They never touch the database from your `.env`: the test run sets its own connection string, and variables that are already set win over `.env`. To run only the fast tests without Docker, use `dotnet test --filter "Category!=Integration"`.
 
+## Where the data comes from
+
+**In a real plant** nobody types numbers into LossLens. Each station tests every board and writes the result (passed on the first attempt or not, defect code) to the test equipment or the MES. Once an hour the counts per line, station and hour are collected and written to the tables `HourlyRecords`, `TestRecords` and `DefectEntries`. LossLens only reads them.
+
+**In this demo** the backend generates the data itself (`MockDataGenerator`) and `MockDataSeeder` writes it to the same tables on every start: the catalog (lines, stations, shifts) once, then the hours that are missing up to the current one. `Data__SeedMockData=false` switches it off.
+
+**Next step:** an import for the real data, either a batch `POST` from the equipment or the MES or a CSV file, both through one service, and an hourly worker. Lines, stations and users are created by an admin API, not in the MVP yet.
+
 ## Milestones
 
-M0 scaffold -> M1 formulas + tests -> M2 mock + API -> M3 frontend shell -> M4 dashboard and plan -> M5 FPY -> M6 defects -> M7 polish. Details in section 10 of the requirements.
+M0 scaffold -> M1 formulas + tests -> M2 mock + API -> M3 frontend shell -> M4 dashboard and plan -> M5 FPY -> M6 defects -> M7 polish. M0-M6 are done, M7 is in progress. Details in section 10 of the requirements.
 
 ## Open questions for the customer
 
-Smartwatch (Q1), real data source (Q2), which FPY definition is the headline number (Q3), shift schedule (Q4), thresholds (Q5), defect opportunities per board (Q6). Full list in section 1.3 of the requirements.
+Alerts on a phone or a smartwatch (Q1), real data source (Q2), which FPY definition is the headline number (Q3), shift schedule (Q4), thresholds (Q5), defect opportunities per board (Q6). Full list in section 1.3 of the requirements.

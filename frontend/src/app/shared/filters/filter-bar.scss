@@ -59,6 +59,20 @@ input[type='date'] {
   color: var(--ink);
 }
 
+.own-line {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font:
+    600 13px Inter,
+    sans-serif;
+  color: var(--ink);
+}
+
 .role-pill {
   display: inline-flex;
   align-items: center;

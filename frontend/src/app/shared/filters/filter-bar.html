@@ -15,19 +15,26 @@
       />
     </label>
 
-    <label class="field">
-      {{ t.filters.line }}
-      <select #line (change)="filters.update({ lineId: line.value })">
-        <option value="all" [selected]="filters.lineId() === 'all'">
-          {{ t.filters.allLines }}
-        </option>
-        @for (item of lines(); track item.id) {
-          <option [value]="item.id" [selected]="filters.lineId() === item.id">
-            {{ item.name }}
+    @if (onlyLine(); as own) {
+      <span class="field">
+        {{ t.filters.line }}
+        <span class="own-line">{{ own.name }}</span>
+      </span>
+    } @else {
+      <label class="field">
+        {{ t.filters.line }}
+        <select #line (change)="filters.update({ lineId: line.value })">
+          <option value="all" [selected]="filters.lineId() === 'all'">
+            {{ t.filters.allLines }}
           </option>
-        }
-      </select>
-    </label>
+          @for (item of lines(); track item.id) {
+            <option [value]="item.id" [selected]="filters.lineId() === item.id">
+              {{ item.name }}
+            </option>
+          }
+        </select>
+      </label>
+    }
 
     <label class="field">
       {{ t.filters.shift }}

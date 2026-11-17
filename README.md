@@ -83,7 +83,7 @@ The backend needs PostgreSQL, a signing key for the tokens and, to sign in, a de
 
 | Variable | Meaning |
 |---|---|
-| `ConnectionStrings__Default` | PostgreSQL connection string (local run) |
+| `ConnectionStrings__Default` | PostgreSQL connection string (local run). The example points to the database of `docker compose`, which is published on port 5433 so it does not clash with a PostgreSQL installed on the machine (5432) |
 | `Jwt__Key` / `JWT_KEY` | secret that signs access tokens, 32+ characters (`openssl rand -base64 48`) |
 | `Auth__DemoPassword` / `DEMO_PASSWORD` | password of the demo users, 8+ characters |
 
@@ -98,7 +98,7 @@ cp .env.example .env   # then set POSTGRES_PASSWORD, JWT_KEY, DEMO_PASSWORD
 docker compose up --build
 ```
 
-The app is on http://localhost:4200, the API on http://localhost:5141.
+The app is on http://localhost:4200, the API on http://localhost:5141, the database on localhost:5433 (`DB_PORT`, `BACKEND_PORT` and `FRONTEND_PORT` in `.env` change the host ports).
 
 **Without Docker:**
 
